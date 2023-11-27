@@ -35,10 +35,11 @@ class Node(object):
     Nodes include the state of the game (i.e. the 2D board), children (i.e. other children nodes), a list of
     untried moves, etc...
     """
-    def __init__(self, board, move=(None, None),
+    def __init__(self, board, player=None, move=(None, None),
                  wins=0, visits=0, children=None):
         # Save the #wins:#visited ratio
-        self.state = board
+        self.state = copy.deepcopy(board)
+        self.player = player
         self.move = move
         self.wins = wins
         self.visits = visits
@@ -67,22 +68,84 @@ class MiniMax(PlayerStrat):
         
         best_move = None
         best_score = -inf
-
-        score, move = self.minmax(self.root_state, 3, True)
-
-
-        print("Score: ", score)
-        print("Move: ", best_move)
-
+        
+        self.root_node = Node(self.root_state)
+        
+        score, move = self.minmax(2)
+        
+        best_move = move
+        best_score = score
+        print(best_move, best_score)
         return best_move
     
-    def minmax(self, board, depth, is_maximizing):
+    def minmax(self, depth):
         """
         @return the score of the board state for the player and the move to play
 
         Minmax algorithm
         """
+        def max_value(node, depth, inner_depth):
+            value = self.utility(node)
+            if inner_depth >= depth or value < 0 or value > 1:
+                return value, node.move
+            
+            value = -np.inf
+            action = None 
+            actions = logic.get_possible_moves(node.state)
+            nextPlayer = 1 if node.player == 2 else 2
+            for a in actions:
+                x, y = a
+                nextNode = Node(node.state, player= nextPlayer, move = a)
+                nextNode.state[x][y] = nextPlayer
+                nextNode.parent = node
+                node.add_child(nextNode)
+
+                v2, a2 = min_value(nextNode, depth, inner_depth+1)
+                if v2 > value:
+                    value = v2 
+                    action = a2
+            return value, action
+
+        def min_value(node, depth, inner_depth):
+            """
+            @return the score of the board state for the player and the move to play
+            """
+            value = self.utility(node)
+            if inner_depth >= depth or value < 0 or value > 1:
+                return value, node.move
+            
+            value = np.inf
+            action = None 
+            actions = logic.get_possible_moves(node.state)
+            nextPlayer = 1 if node.player == 2 else 2
+            for a in actions:
+                x, y = a
+                nextNode = Node(node.state, player= nextPlayer, move = a)
+                nextNode.state[x][y] = nextPlayer
+                nextNode.parent = node
+                node.add_child(nextNode)
+                v2, a2 = max_value(nextNode, depth, inner_depth+1)
+                if v2 < value :
+                    value = v2 
+                    action = a2
+            return value, action
+
+        self.root_node.player = self.player
+        return max_value(self.root_node, depth, 0)
         
+
+    def utility(self, node):
+        res = logic.is_game_over(self.player, node.state)
+        print("RES", res, "PLAYER", self.player, "NODE", node.state)
+
+        match res:
+            case None:
+                return random.random()
+            case _: 
+                if res == self.player:
+                    return 2
+                else :
+                    return -1    
     
     def evaluate(self, winner):
         """
