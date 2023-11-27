@@ -82,34 +82,7 @@ class MiniMax(PlayerStrat):
 
         Minmax algorithm
         """
-        # Check if game is over
-        winner = logic.is_game_over(self.player, board)
-        if winner or depth == 0:
-            return self.evaluate(winner), board
         
-        if is_maximizing:
-            value = -inf
-            for move in logic.get_possible_moves(board):
-                copy_board = copy.deepcopy(board) 
-                copy_board[move] = self.player  # Update copy_board with move
-            
-                result_val, new_board = self.minmax(copy_board, depth-1, False)
-                if result_val > value:
-                    value = result_val
-                    board = new_board
-                copy_board = None
-        else:
-            value = inf
-            for move in logic.get_possible_moves(board):
-                copy_board = copy.deepcopy(board)
-                copy_board[move] = self.player-1  # Update copy_board with move
-
-                result_val, new_board = self.minmax(copy_board, depth-1, True)
-                if result_val < value:
-                    value = result_val
-                    board = new_board
-                copy_board = None
-        return value, board
     
     def evaluate(self, winner):
         """
