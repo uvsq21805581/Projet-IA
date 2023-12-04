@@ -91,7 +91,7 @@ class MiniMax(PlayerStrat):
             value = self.utility(node)
             print("inner depth: ", inner_depth, "player: ", curr_player, "value: ", value)
             print("node state:\n", node.state)
-            input("press enter to continue")
+            # input("press enter to continue")
 
             if inner_depth >= depth or value < 0: # revoir la condition avec un is game over
                 print("Max depth: ", inner_depth, value)
@@ -121,7 +121,7 @@ class MiniMax(PlayerStrat):
             value = self.utility(node)
             print("inner depth: ", inner_depth, "player: ", curr_player, "value: ", value)
             print("node state:\n", node.state)
-            input("press enter to continue")
+            # input("press enter to continue")
 
             if inner_depth >= depth or value is not None: # revoir la condition avec un is game over
                 print("Min depth: ", inner_depth, value)
