@@ -146,8 +146,6 @@ class MiniMax(PlayerStrat):
 
         self.root_node.player = self.player
         # print("INIT PLAYER", self.player)
-        # input("press enter to continue")
-        #test
         return max_value(self.root_node, depth, self.player, 0)
         
     def utility(self, node):
