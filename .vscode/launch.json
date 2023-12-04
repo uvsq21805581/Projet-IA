@@ -11,7 +11,7 @@
             "program": "${workspaceFolder}/source/main.py",
             "console": "integratedTerminal",
             "justMyCode": true,
-            "args": ["--player", "minimax", "--other", "minimax", "--size", "3"]
+            "args": ["--other", "minimax", "--size", "6"]
         }
     ]
 }

@@ -8,6 +8,7 @@ from rich.table import Table
 from rich.progress import track
 from rich.console import Console
 from rich.progress import Progress
+import time
 
 import classes.logic as logic
 
@@ -71,7 +72,9 @@ class MiniMax(PlayerStrat):
         
         self.root_node = Node(self.root_state, player=1)
         
+        temp = time.time()
         score, move = self.minmax()
+        print(time.time() - temp)
         
         best_move = move
         best_score = score
@@ -84,8 +87,14 @@ class MiniMax(PlayerStrat):
 
         Minmax algorithm
         """
-        def max_value(node, depth, curr_player, inner_depth):
+        def max_value(node, depth, curr_player, inner_depth, alpha, beta):
+            """
+            @return the score of the board state for the player and the move to play
+            """
             value = self.utility(node)
+            if alpha >= beta:
+                return value, node.move
+
             if (inner_depth >= depth) or (logic.is_game_over(node.player, node.state) is not None):
                 return value, node.move
             
@@ -100,19 +109,23 @@ class MiniMax(PlayerStrat):
                 nextNode.parent = node
                 node.add_child(nextNode)
 
-                v2, a2 = min_value(nextNode, depth, nextPlayer, inner_depth+1)
+                v2, a2 = min_value(nextNode, depth, nextPlayer, inner_depth+1, alpha, beta)
+                
                 if v2 > value:
                     value = v2 
                     action = a2
+                    alpha = max(alpha, v2)
+                if value >= beta:
+                    return value, action
+                               
             return value, action
 
-        def min_value(node, depth, curr_player, inner_depth):
+        def min_value(node, depth, curr_player, inner_depth, alpha, beta):
             """
             @return the score of the board state for the player and the move to play
             """
             value = self.utility(node)
-
-            if inner_depth >= depth or (logic.is_game_over(node.player, node.state) is not None): # revoir la condition avec un is game over
+            if inner_depth >= depth or (logic.is_game_over(node.player, node.state) is not None):
                 return value, node.move
             
             value = np.inf
@@ -125,14 +138,20 @@ class MiniMax(PlayerStrat):
                 nextNode.state[x][y] = curr_player
                 nextNode.parent = node
                 node.add_child(nextNode)
-                v2, a2 = max_value(nextNode, depth, nextPlayer, inner_depth+1)
+                
+                v2, a2 = max_value(nextNode, depth, nextPlayer, inner_depth+1, alpha, beta)
+               
                 if v2 < value :
                     value = v2 
                     action = a2
+                    beta = min(beta, value)
+                if value <= alpha:
+                    return value, action
+
             return value, action
 
         self.root_node.player = self.player
-        return max_value(self.root_node, depth, self.player, 0)
+        return max_value(self.root_node, depth, self.player, 0, -np.inf, np.inf)
         
     def utility(self, node):
         res = logic.is_game_over(self.root_node.player, node.state)
@@ -141,6 +160,12 @@ class MiniMax(PlayerStrat):
             return 2
         else :
             return -1
+        
+    def elaguage_alpha_beta(self, node, depth, alpha, beta, curr_player, inner_depth):
+        """
+        @return the score of the board state for the player and the move to play
+        """
+        raise NotImplementedError
         
 str2strat: dict[str, PlayerStrat] = {
         "human": None,
