@@ -72,13 +72,10 @@ class MiniMax(PlayerStrat):
         self.root_node = Node(self.root_state, player=1)
         
         score, move = self.minmax()
-        print("score and move: ", score, move)
         
         best_move = move
         best_score = score
         
-        print("best move and score: ", best_move, best_score)
-        # input("press enter to continue")
         return best_move
     
     def minmax(self, depth = inf):
@@ -89,22 +86,12 @@ class MiniMax(PlayerStrat):
         """
         def max_value(node, depth, curr_player, inner_depth):
             value = self.utility(node)
-            print("inner depth: ", inner_depth, "player: ", curr_player, "value: ", value)
-            print("node state:\n", node.state)
-            #input("press enter to continue")
-
-            #if inner_depth >= depth or value < 0: # revoir la condition avec un is game over
-            #print(inner_depth, depth, logic.is_game_over(node.player, node.state))
-            #print(False or None)
-            print("LOGIC", logic.is_game_over(node.player, node.state) == True)
             if (inner_depth >= depth) or (logic.is_game_over(node.player, node.state) is not None):
-                print("Max depth: ", inner_depth, value)
                 return value, node.move
             
             value = -np.inf
             action = None 
             actions = logic.get_possible_moves(node.state)
-            #print("LEN",len(actions), depth, inner_depth)
             nextPlayer = 1 if curr_player == 2 else 2
             for a in actions:
                 x, y = a
@@ -124,12 +111,8 @@ class MiniMax(PlayerStrat):
             @return the score of the board state for the player and the move to play
             """
             value = self.utility(node)
-            print("inner depth: ", inner_depth, "player: ", curr_player, "value: ", value)
-            print("node state:\n", node.state)
-            #input("press enter to continue")
 
             if inner_depth >= depth or (logic.is_game_over(node.player, node.state) is not None): # revoir la condition avec un is game over
-                print("Min depth: ", inner_depth, value)
                 return value, node.move
             
             value = np.inf
@@ -149,12 +132,10 @@ class MiniMax(PlayerStrat):
             return value, action
 
         self.root_node.player = self.player
-        # print("INIT PLAYER", self.player)
         return max_value(self.root_node, depth, self.player, 0)
         
     def utility(self, node):
         res = logic.is_game_over(self.root_node.player, node.state)
-        print("RES", res, "PLAYER", self.player, "NODE", node.state)
 
         if res == node.player:
             return 2
