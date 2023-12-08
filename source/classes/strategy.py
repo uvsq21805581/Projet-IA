@@ -160,13 +160,7 @@ class MiniMax(PlayerStrat):
             return 2
         else :
             return -1
-        
-    def elaguage_alpha_beta(self, node, depth, alpha, beta, curr_player, inner_depth):
-        """
-        @return the score of the board state for the player and the move to play
-        """
-        raise NotImplementedError
-        
+                
 str2strat: dict[str, PlayerStrat] = {
         "human": None,
         "random": Random,
