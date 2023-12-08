@@ -70,46 +70,45 @@ class MiniMax(PlayerStrat):
         best_move = None
         best_score = -inf
         
-        self.root_node = Node(self.root_state, player=1)
-        
+        self.root_node = Node(self.root_state, player = self.player)
+        self.kernel = self.gkern(len(self.root_node.state), 1)
+        print(self.kernel)
         temp = time.time()
-        score, move = self.minmax()
-        print(time.time() - temp)
+        score, move = self.minmax(7)
+        print("time: ", time.time() - temp)
+        print("score: ", score)
         
         best_move = move
         best_score = score
         
         return best_move
     
-    def minmax(self, depth = inf):
+    def minmax(self, depth = math.inf):
         """
         @return the score of the board state for the player and the move to play
-
         Minmax algorithm
         """
-        def max_value(node, depth, curr_player, inner_depth, alpha, beta):
+        def max_value(node, depth, inner_depth, alpha, beta):
             """
             @return the score of the board state for the player and the move to play
             """
-            value = self.utility(node)
-            if alpha >= beta:
+            player = self.player
+            if (inner_depth >= depth) or (logic.is_game_over(3 - player, node.state) is not None):
+                value = self.utility(node)
                 return value, node.move
 
-            if (inner_depth >= depth) or (logic.is_game_over(node.player, node.state) is not None):
-                return value, node.move
             
             value = -np.inf
             action = None 
             actions = logic.get_possible_moves(node.state)
-            nextPlayer = 1 if curr_player == 2 else 2
             for a in actions:
                 x, y = a
-                nextNode = Node(node.state, player = curr_player, move = a)
-                nextNode.state[x][y] = curr_player
+                nextNode = Node(node.state, player = player, move = a)
+                nextNode.state[x][y] = player
                 nextNode.parent = node
                 node.add_child(nextNode)
 
-                v2, a2 = min_value(nextNode, depth, nextPlayer, inner_depth+1, alpha, beta)
+                v2, a2 = min_value(nextNode, depth, inner_depth+1, alpha, beta)
                 
                 if v2 > value:
                     value = v2 
@@ -120,26 +119,26 @@ class MiniMax(PlayerStrat):
                                
             return value, action
 
-        def min_value(node, depth, curr_player, inner_depth, alpha, beta):
+        def min_value(node, depth, inner_depth, alpha, beta):
             """
             @return the score of the board state for the player and the move to play
             """
-            value = self.utility(node)
-            if inner_depth >= depth or (logic.is_game_over(node.player, node.state) is not None):
+            player = 3 - self.player
+            if (inner_depth >= depth) or (logic.is_game_over(3 - player, node.state) is not None):
+                value = self.utility(node)
                 return value, node.move
             
             value = np.inf
             action = None 
             actions = logic.get_possible_moves(node.state)
-            nextPlayer = 1 if curr_player == 2 else 2
             for a in actions:
                 x, y = a
-                nextNode = Node(node.state, player = curr_player, move = a)
-                nextNode.state[x][y] = curr_player
+                nextNode = Node(node.state, player = player, move = a)
+                nextNode.state[x][y] = player
                 nextNode.parent = node
                 node.add_child(nextNode)
                 
-                v2, a2 = max_value(nextNode, depth, nextPlayer, inner_depth+1, alpha, beta)
+                v2, a2 = max_value(nextNode, depth, inner_depth+1, alpha, beta)
                
                 if v2 < value :
                     value = v2 
@@ -150,17 +149,37 @@ class MiniMax(PlayerStrat):
 
             return value, action
 
-        self.root_node.player = self.player
-        return max_value(self.root_node, depth, self.player, 0, -np.inf, np.inf)
+        return max_value(self.root_node, depth, 0, -np.inf, np.inf)
         
     def utility(self, node):
-        res = logic.is_game_over(self.root_node.player, node.state)
-
-        if res == node.player:
-            return 2
+        """
+        @return the score of the board state for the player and the move to play
+        """
+        res = logic.is_game_over(node.player, node.state)
+        if res != self.player: # logique inversée
+            return 200
         else :
-            return -1
-                
+            return -200
+
+    def eval(self, node, curr_player):
+        """
+        @return the score of the board state for the player and the move to play
+        """
+        temp = node.state
+        temp[np.where(temp == curr_player)] = -1
+        score_board = np.sum(node.state * self.kernel)         
+        #print("score_board",  score_board)
+        return score_board
+
+    def gkern(self, l=5, sig=1.):
+        """
+        creates gaussian kernel with side length `l` and a sigma of `sig`
+        """
+        ax = np.linspace(-(l - 1) / 2., (l - 1) / 2., l)
+        gauss = np.exp(-0.5 * np.square(ax) / np.square(sig))
+        kernel = np.outer(gauss, gauss)
+        return kernel / np.sum(kernel)
+    
 str2strat: dict[str, PlayerStrat] = {
         "human": None,
         "random": Random,
