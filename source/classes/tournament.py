@@ -82,4 +82,22 @@ class Tournament:
         # TODO Design your own evaluation measure!
         # https://pyformat.info/
         log.info("Design your own evaluation measure!")
+        """
+        path = os.getcwd() + '/tournaments.csv'
+        if not os.path.exists(path):
+            df = pd.DataFrame(columns=["IA1", "IA2", "size", "winrate", "tot_time", "length"])
+        else :
+            df = pd.read_csv('./tournaments.csv')
+        df.append(pd.Series({"IA1":self.STRAT[0],
+                             "IA2":self.STRAT[1],
+                             "size": 0,
+                             "winrate": scores[0] / scores[1],
+                             }))
+        """
         print(scores)
+        winrate = 0
+        if scores[0] == 0 or scores[1] == 0: 
+            winrate = 100
+        else:
+            winrate = ((scores[0] / (scores[0] + scores[1]))) * 100
+        print("IA1 : ", self.STRAT[0], "; IA2 : ", self.STRAT[1], "; size : ", self.BOARD_SIZE, "; winrate : ", winrate, "%")
